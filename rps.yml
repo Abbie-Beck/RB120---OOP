@@ -47,7 +47,7 @@ player_clear_screen: |
   ============================
   Press c to clear the screen:
 computer_angry: "Please press c to clear screen, human!!"
-thanks_for_playing: "Thanks for playing RPSLS %{human_name}. Good bye!"
+thanks_for_playing: "Thanks for playing Rock, Paper, Scissors, Lizard, Spock, %{human_name}. Goodbye!"
 human_move: |
   =====================================
   => %{human_name} chose %{human_move}.
@@ -63,6 +63,7 @@ human_wins_game: |
 computer_win_game: |
   
   Sorry, %{computer_name} won all the marbles!
+want_move_history?: "Would you like to see the history of all player moves in this game?"
 human_move_history: |
   Human's Moves this game:
 computer_move_history: |

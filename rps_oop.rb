@@ -46,10 +46,6 @@ module Displayable
     system "clear"
   end
 
-  def display_goodbye_message
-    prompt format(messages('thanks_for_playing'), human_name: human.name)
-  end
-
   def display_moves
     prompt format(messages('human_move'), human_name: human.name,
                                           human_move: human.move)
@@ -97,6 +93,14 @@ module Displayable
     end
     prompt format(messages('separation_banner'))
   end
+  
+  def optional_display_move_history(human, computer)
+    prompt format(messages('want_move_history?'))
+    answer = gets.chomp
+    if answer.start_with?('y')
+      display_move_history(human, computer)
+    end 
+  end 
 
   def display_move_history(human, computer)
     prompt format(messages('human_move_history'))
@@ -127,6 +131,10 @@ module Displayable
     when 'Mr. Gutsy'
       prompt format(messages('mr_gutsy_won'))
     end
+  end
+
+  def display_goodbye_message
+    prompt format(messages('thanks_for_playing'), human_name: human.name)
   end
 end
 
@@ -289,7 +297,7 @@ class RPSGame
       update_score
       break if winning_score?(human.score, computer.score)
     end
-    display_move_history(human, computer)
+    optional_display_move_history(human, computer)
   end
 
   def play_game

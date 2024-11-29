@@ -23,11 +23,16 @@ mr_handy_won: |
 mr_gutsy_won: |
  Mr. Gutsy says:
  Is that the best you can do?
-welcome_name: "Welcome to Rock, Paper, Scissors, Lizard, Spock, %{human_name}!"
+welcome_name: |
+  =================================================================
+  Welcome to Rock, Paper, Scissors, Lizard, Spock, %{human_name}!
 points_to_win: "First player to 8 points wins it all!"
-your_opponent: "Your opponent is %{computer_name}!"
+your_opponent: |
+  ====================================
+  Your opponent is %{computer_name}!
 need_rules: "Would you like to view the rules? (y/yes)"
 rules: |
+  =============================
   Scissors cut paper
   Paper covers rock
   Rock crushes lizard
@@ -38,18 +43,30 @@ rules: |
   Paper disproves Spock
   Spock vaporizes rock
   Rock breaks scissors
-player_clear_screen: "Press c to clear the screen:"
+player_clear_screen: |
+  ============================
+  Press c to clear the screen:
 computer_angry: "Please press c to clear screen, human!!"
 thanks_for_playing: "Thanks for playing RPSLS %{human_name}. Good bye!"
-human_move: "%{human_name} chose %{human_move}."
-computer_move: "%{computer_name} chose %{computer_move}"
+human_move: |
+  =====================================
+  => %{human_name} chose %{human_move}.
+computer_move: |
+  %{computer_name} chose %{computer_move} 
+  =====================================
 human_won_round: "%{human_name} won this round!"
-computer_won_round: "%{computer_name} won this round!"
+computer_won: "%{computer_name} won this round!"
 its_a_tie: "It's a tie!"
-human_wins_game: "Congratulations %{human_name}! You won it all!"
-computer_wins_game: "Sorry, %{computer_name} won all the marbles!"
-human_move_history: "Human's Moves this game:"
-computer_move_history: "Computer's Moves this game:"
+human_wins_game: |
+  
+  Congratulations %{human_name}! You won it all!
+computer_win_game: |
+  
+  Sorry, %{computer_name} won all the marbles!
+human_move_history: |
+  Human's Moves this game:
+computer_move_history: |
+  Computer's Moves this game:
 human_score: "%{human_name}'s score is now: %{human_score}"
 computer_score: "%{computer_name}'s score is now: %{computer_score}"
 play_again?: "would you like to play again?(y/n)"

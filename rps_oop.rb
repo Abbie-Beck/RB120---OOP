@@ -165,7 +165,7 @@ class Human < Player
     loop do
       prompt format(messages('welcome'))
       name = gets.chomp
-      break unless name.strip.empty?
+      break unless name.strip.delete('^A-Za-z').empty?
       prompt format(messages('valid_name'))
     end
     system "clear"

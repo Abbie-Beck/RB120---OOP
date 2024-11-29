@@ -144,7 +144,6 @@ class Player
   include Displayable
 
   def initialize
-    set_name
     @score = 0
   end
 
@@ -159,6 +158,11 @@ end
 
 class Human < Player
   @@human_move_history = []
+
+  def initialize
+    set_name
+    super
+  end
 
   def set_name
     name = ''
@@ -196,6 +200,11 @@ end
 
 class Computer < Player
   @@computer_move_history = []
+
+  def initialize
+    set_name
+    super
+  end 
 
   def set_name
     self.name = ['Claptrap', 'Mr. Handy', 'Mr. Gutsy'].sample

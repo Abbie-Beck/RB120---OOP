@@ -2,7 +2,7 @@ require 'yaml'
 
 module Writable
   MESSAGES = YAML.load_file('rps.yml')
-  
+
   def prompt(message)
     puts "=> #{message}"
   end
@@ -118,7 +118,7 @@ end
 class Player
   attr_accessor :move, :name
   attr_reader :score
-  
+
   include Writable
 
   def initialize
@@ -132,8 +132,9 @@ class Player
   def score_reset
     self.score = 0
   end
-  
+
   private
+
   attr_writer :score
 end
 
@@ -188,14 +189,13 @@ class Computer < Player
   def set_name
     self.name = ['Claptrap', 'Mr. Handy', 'Mr. Gutsy'].sample
   end
-  
+
   CLAPTRAP_MOVES = %w(rock spock lizard lizard lizard)
   # not a very clever guy, just loves lizards
   MRGUTSY_MOVES = %w(scissors rock rock rock)
   # wants to crush other life forms with rock
   MRHANDY_MOVES = %w(rock scissors paper paper paper)
   # intellectual opponent, believes the pen is mightier than the sword
-
 
   def choose
     moveset = case @name
@@ -236,8 +236,8 @@ end
 
 class Move
   attr_accessor :value
-  
-  include Comparable 
+
+  include Comparable
 
   WINNING_COMBOS = {
     'rock' => %w(lizard scissors),
@@ -256,7 +256,7 @@ class Move
       1
     elsif WINNING_COMBOS[other.value].include?(value)
       -1
-    else 
+    else
       0
     end
   end
@@ -274,13 +274,13 @@ class RPSGame
 
   def play
     play_game
-  end 
-  
+  end
+
   def initialize
     @human = Human.new
     @computer = Computer.new
   end
-  
+
   private
 
   def update_score

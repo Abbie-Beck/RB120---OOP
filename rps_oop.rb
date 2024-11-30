@@ -1,7 +1,8 @@
 require 'yaml'
-MESSAGES = YAML.load_file('rps.yml')
 
 module Writable
+  MESSAGES = YAML.load_file('rps.yml')
+  
   def prompt(message)
     puts "=> #{message}"
   end
@@ -11,7 +12,7 @@ module Writable
   end
 end
 
-module Displayable
+module RPSGameDisplay
   include Writable
 
   def display_name_and_opponent
@@ -53,17 +54,17 @@ module Displayable
                                              computer_move: computer.move)
   end
 
-  # rubocop:disable Metrics/AbcSize
   def display_round_winner
-    if human.move > computer.move
+    human_move = human.move
+    computer_move = computer.move
+    if human_move > computer_move
       prompt format(messages('human_won_round'), human_name: human.name)
-    elsif human.move < computer.move
+    elsif human_move < computer_move
       prompt format(messages('computer_won'), computer_name: computer.name)
     else
       prompt format(messages('its_a_tie'))
     end
   end
-  # rubocop:enable Metrics/AbcSize
 
   def display_current_score
     prompt format(messages('human_score'), human_name: human.name,
@@ -93,14 +94,12 @@ module Displayable
     end
     prompt format(messages('separation_banner'))
   end
-  
+
   def optional_display_move_history(human, computer)
     prompt format(messages('want_move_history?'))
     answer = gets.chomp
-    if answer.start_with?('y')
-      display_move_history(human, computer)
-    end 
-  end 
+    return display_move_history(human, computer) if answer.start_with?('y')
+  end
 
   def display_move_history(human, computer)
     prompt format(messages('human_move_history'))
@@ -111,37 +110,16 @@ module Displayable
     prompt format(messages('separation_banner'))
   end
 
-  def display_loser_message(name)
-    case name
-    when 'Claptrap'
-      prompt format(messages('claptrap_lost'))
-    when 'Mr. Handy'
-      prompt format(messages('mr_handy_lost'))
-    when 'Mr. Gutsy'
-      prompt format(messages('mr_gutsy_lost'))
-    end
-  end
-
-  def display_winner_message(name)
-    case name
-    when 'Claptrap'
-      prompt format(messages('claptrap_won'))
-    when 'Mr. Handy'
-      prompt format(messages('mr_handy_won'))
-    when 'Mr. Gutsy'
-      prompt format(messages('mr_gutsy_won'))
-    end
-  end
-
   def display_goodbye_message
     prompt format(messages('thanks_for_playing'), human_name: human.name)
   end
 end
 
 class Player
-  attr_accessor :move, :name, :score
-
-  include Displayable
+  attr_accessor :move, :name
+  attr_reader :score
+  
+  include Writable
 
   def initialize
     @score = 0
@@ -154,14 +132,16 @@ class Player
   def score_reset
     self.score = 0
   end
+  
+  private
+  attr_writer :score
 end
 
 class Human < Player
-  @@human_move_history = []
-
   def initialize
     set_name
     super
+    @human_move_history = []
   end
 
   def set_name
@@ -190,44 +170,74 @@ class Human < Player
       prompt format(messages('valid_move'))
     end
     self.move = Move.new(choice)
-    @@human_move_history << move.value
+    @human_move_history << move.value
   end
 
   def move_history
-    @@human_move_history
+    @human_move_history
   end
 end
 
 class Computer < Player
-  @@computer_move_history = []
-
   def initialize
     set_name
     super
-  end 
+    @computer_move_history = []
+  end
 
   def set_name
     self.name = ['Claptrap', 'Mr. Handy', 'Mr. Gutsy'].sample
   end
+  
+  CLAPTRAP_MOVES = %w(rock spock lizard lizard lizard)
+  # not a very clever guy, just loves lizards
+  MRGUTSY_MOVES = %w(scissors rock rock rock)
+  # wants to crush other life forms with rock
+  MRHANDY_MOVES = %w(rock scissors paper paper paper)
+  # intellectual opponent, believes the pen is mightier than the sword
+
 
   def choose
-    if @name == 'Claptrap'
-      self.move = Move.new(Move::CLAPTRAP_MOVES.sample)
-    elsif @name == 'Mr. Handy'
-      self.move = Move.new(Move::MRHANDY_MOVES.sample)
-    elsif @name == 'Mr. Gutsy'
-      self.move = Move.new(Move::MRGUTSY_MOVES.sample)
-    end
-    @@computer_move_history << move.value
+    moveset = case @name
+              when 'Claptrap' then CLAPTRAP_MOVES
+              when 'Mr. Handy' then MRHANDY_MOVES
+              when 'Mr. Gutsy' then MRGUTSY_MOVES
+              end
+    self.move = Move.new(moveset.sample)
+    @computer_move_history << move.value
   end
 
   def move_history
-    @@computer_move_history
+    @computer_move_history
+  end
+
+  def display_loser_message(name)
+    case name
+    when 'Claptrap'
+      prompt format(messages('claptrap_lost'))
+    when 'Mr. Handy'
+      prompt format(messages('mr_handy_lost'))
+    when 'Mr. Gutsy'
+      prompt format(messages('mr_gutsy_lost'))
+    end
+  end
+
+  def display_winner_message(name)
+    case name
+    when 'Claptrap'
+      prompt format(messages('claptrap_won'))
+    when 'Mr. Handy'
+      prompt format(messages('mr_handy_won'))
+    when 'Mr. Gutsy'
+      prompt format(messages('mr_gutsy_won'))
+    end
   end
 end
 
 class Move
   attr_accessor :value
+  
+  include Comparable 
 
   WINNING_COMBOS = {
     'rock' => %w(lizard scissors),
@@ -237,23 +247,18 @@ class Move
     'spock' => %w(rock scissors)
   }
 
-  CLAPTRAP_MOVES = %w(rock spock lizard lizard lizard)
-  # not a very clever guy, just loves lizards
-  MRGUTSY_MOVES = %w(scissors rock rock rock)
-  # wants to crush other life forms with rock
-  MRHANDY_MOVES = %w(rock scissors paper paper paper)
-  # intellectual opponent, believes the pen is mightier than the sword
-
   def initialize(value)
     @value = value
   end
 
-  def >(other)
-    WINNING_COMBOS[value].include?(other.value)
-  end
-
-  def <(other)
-    WINNING_COMBOS[other.value].include?(value)
+  def <=>(other)
+    if WINNING_COMBOS[value].include?(other.value)
+      1
+    elsif WINNING_COMBOS[other.value].include?(value)
+      -1
+    else 
+      0
+    end
   end
 
   def to_s
@@ -264,12 +269,19 @@ end
 class RPSGame
   attr_accessor :human, :computer
 
-  include Displayable
+  include RPSGameDisplay
+  include Writable
 
+  def play
+    play_game
+  end 
+  
   def initialize
     @human = Human.new
     @computer = Computer.new
   end
+  
+  private
 
   def update_score
     if human.move > computer.move
@@ -322,4 +334,4 @@ class RPSGame
   end
 end
 
-RPSGame.new.play_game
+RPSGame.new.play

@@ -1,29 +1,29 @@
 require 'yaml'
 
-module Writable
+module Write
   MESSAGES = YAML.load_file('rps.yml')
 
-  def prompt(message)
+  def self.prompt(message)
     puts "=> #{message}"
   end
 
-  def messages(message)
+  def self.messages(message)
     MESSAGES[message]
   end
 end
 
 module RPSGameDisplay
-  include Writable
+  include Write
 
   def display_name_and_opponent
-    prompt format(messages('welcome_name'), human_name: human.name)
-    prompt format(messages('points_to_win'))
-    prompt format(messages('your_opponent'), computer_name: computer.name)
+    Write.prompt format(Write.messages('welcome_name'), human_name: human.name)
+    Write.prompt format(Write.messages('points_to_win'))
+    Write.prompt format(Write.messages('your_opponent'), computer_name: computer.name)
   end
 
   def display_welcome_message
     display_name_and_opponent
-    prompt format(messages('need_rules'))
+    Write.prompt format(Write.messages('need_rules'))
     answer = gets.chomp
     want_rules?(answer)
   end
@@ -37,20 +37,20 @@ module RPSGameDisplay
   end
 
   def display_rules
-    puts format(messages('rules'))
-    prompt format(messages('player_clear_screen'))
+    puts format(Write.messages('rules'))
+    Write.prompt format(Write.messages('player_clear_screen'))
     loop do
       user_input = gets.chomp
       break if user_input.downcase == 'c'
-      prompt format(messages('computer_angry'))
+      Write.prompt format(Write.messages('computer_angry'))
     end
     system "clear"
   end
 
   def display_moves
-    prompt format(messages('human_move'), human_name: human.name,
+    Write.prompt format(Write.messages('human_move'), human_name: human.name,
                                           human_move: human.move)
-    prompt format(messages('computer_move'), computer_name: computer.name,
+    Write.prompt format(Write.messages('computer_move'), computer_name: computer.name,
                                              computer_move: computer.move)
   end
 
@@ -58,60 +58,60 @@ module RPSGameDisplay
     human_move = human.move
     computer_move = computer.move
     if human_move > computer_move
-      prompt format(messages('human_won_round'), human_name: human.name)
+      Write.prompt format(Write.messages('human_won_round'), human_name: human.name)
     elsif human_move < computer_move
-      prompt format(messages('computer_won'), computer_name: computer.name)
+      Write.prompt format(Write.messages('computer_won'), computer_name: computer.name)
     else
-      prompt format(messages('its_a_tie'))
+      Write.prompt format(Write.messages('its_a_tie'))
     end
   end
 
   def display_current_score
-    prompt format(messages('human_score'), human_name: human.name,
+    Write.prompt format(Write.messages('human_score'), human_name: human.name,
                                            human_score: human.score)
-    prompt format(messages('computer_score'), computer_name: computer.name,
+    Write.prompt format(Write.messages('computer_score'), computer_name: computer.name,
                                               computer_score: computer.score)
-    prompt format(messages('separation_banner'))
+    Write.prompt format(Write.messages('separation_banner'))
   end
 
   def display_human_win
-    prompt format(messages('human_wins_game'), human_name: human.name)
-    prompt format(messages('separation_banner'))
+    Write.prompt format(Write.messages('human_wins_game'), human_name: human.name)
+    Write.prompt format(Write.messages('separation_banner'))
   end
 
   def display_computer_win
-    prompt format(messages('computer_win_game'), computer_name: computer.name)
-    prompt format(messages('separation_banner'))
+    Write.prompt format(Write.messages('computer_win_game'), computer_name: computer.name)
+    Write.prompt format(Write.messages('separation_banner'))
   end
 
-  def display_game_winner(player_score, computer_score)
-    if player_score == 8
+  def display_game_winner
+    if human.score == 8
       display_human_win
       computer.display_loser_message(computer.name)
-    elsif computer_score == 8
+    elsif computer.score == 8
       display_computer_win
       computer.display_winner_message(computer.name)
     end
-    prompt format(messages('separation_banner'))
+    Write.prompt format(Write.messages('separation_banner'))
   end
 
   def optional_display_move_history(human, computer)
-    prompt format(messages('want_move_history?'))
+    Write.prompt format(Write.messages('want_move_history?'))
     answer = gets.chomp
     return display_move_history(human, computer) if answer.start_with?('y')
   end
 
   def display_move_history(human, computer)
-    prompt format(messages('human_move_history'))
+    Write.prompt format(Write.messages('human_move_history'))
     p human.move_history
-    puts format(messages('line_break'))
-    prompt format(messages('computer_move_history'))
+    puts format(Write.messages('line_break'))
+    Write.prompt format(Write.messages('computer_move_history'))
     p computer.move_history
-    prompt format(messages('separation_banner'))
+    Write.prompt format(Write.messages('separation_banner'))
   end
 
   def display_goodbye_message
-    prompt format(messages('thanks_for_playing'), human_name: human.name)
+    Write.prompt format(Write.messages('thanks_for_playing'), human_name: human.name)
   end
 end
 
@@ -119,7 +119,7 @@ class Player
   attr_accessor :move, :name
   attr_reader :score
 
-  include Writable
+  include Write
 
   def initialize
     @score = 0
@@ -148,18 +148,18 @@ class Human < Player
   def set_name
     name = ''
     loop do
-      prompt format(messages('welcome'))
+      Write.prompt format(Write.messages('welcome'))
       name = gets.chomp
       break unless name.strip.delete('^A-Za-z').empty?
-      prompt format(messages('valid_name'))
+      Write.prompt format(Write.messages('valid_name'))
     end
     system "clear"
     self.name = name.capitalize
   end
 
   def prompt_choice
-    puts format(messages('line_break'))
-    prompt format(messages('pick_move'))
+    puts format(Write.messages('line_break'))
+    Write.prompt format(Write.messages('pick_move'))
   end
 
   def choose
@@ -168,7 +168,7 @@ class Human < Player
       prompt_choice
       choice = gets.chomp
       break if Move::WINNING_COMBOS.keys.include? choice
-      prompt format(messages('valid_move'))
+      Write.prompt format(Write.messages('valid_move'))
     end
     self.move = Move.new(choice)
     @human_move_history << move.value
@@ -214,22 +214,22 @@ class Computer < Player
   def display_loser_message(name)
     case name
     when 'Claptrap'
-      prompt format(messages('claptrap_lost'))
+      Write.prompt format(Write.messages('claptrap_lost'))
     when 'Mr. Handy'
-      prompt format(messages('mr_handy_lost'))
+      Write.prompt format(Write.messages('mr_handy_lost'))
     when 'Mr. Gutsy'
-      prompt format(messages('mr_gutsy_lost'))
+      Write.prompt format(Write.messages('mr_gutsy_lost'))
     end
   end
 
   def display_winner_message(name)
     case name
     when 'Claptrap'
-      prompt format(messages('claptrap_won'))
+      Write.prompt format(Write.messages('claptrap_won'))
     when 'Mr. Handy'
-      prompt format(messages('mr_handy_won'))
+      Write.prompt format(Write.messages('mr_handy_won'))
     when 'Mr. Gutsy'
-      prompt format(messages('mr_gutsy_won'))
+      Write.prompt format(Write.messages('mr_gutsy_won'))
     end
   end
 end
@@ -270,14 +270,13 @@ class RPSGame
   attr_accessor :human, :computer
 
   include RPSGameDisplay
-  include Writable
+  include Write
 
   def play
     play_game
   end
 
   def initialize
-    @human = Human.new
     @computer = Computer.new
   end
 
@@ -295,10 +294,10 @@ class RPSGame
   def play_again?
     answer = nil
     loop do
-      prompt format(messages('play_again?'))
+      Write.prompt format(Write.messages('play_again?'))
       answer = gets.chomp
       break if %w(y n).include?(answer)
-      prompt format(messages('valid_answer'))
+      Write.prompt format(Write.messages('valid_answer'))
     end
 
     return true if answer.downcase == 'y'
@@ -322,10 +321,11 @@ class RPSGame
   end
 
   def play_game
+    @human = Human.new
     display_welcome_message
     loop do
       play_round
-      display_game_winner(human.score, computer.score)
+      display_game_winner
       break unless play_again?
       human.score_reset
       computer.score_reset

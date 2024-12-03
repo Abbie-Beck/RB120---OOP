@@ -1,4 +1,6 @@
-welcome: "What's your name?"
+welcome: |
+  Hello and Welcome to Rock, Paper, Scissors, Lizard, Spock! 
+  => What's your name?
 valid_name: "Please enter a valid name"
 line_break: ""
 separation_banner: "====================================="
@@ -25,7 +27,7 @@ mr_gutsy_won: |
  Is that the best you can do?
 welcome_name: |
   =================================================================
-  Welcome to Rock, Paper, Scissors, Lizard, Spock, %{human_name}!
+  Let's get started, %{human_name}!
 points_to_win: "First player to 8 points wins it all!"
 your_opponent: |
   ====================================

@@ -18,7 +18,7 @@ module RPSGameDisplay
   def display_name_and_opponent
     Write.prompt format(Write.messages('welcome_name'), human_name: human.name)
     Write.prompt format(Write.messages('points_to_win'))
-    Write.prompt format(Write.messages('your_opponent'), computer_name: computer.name)
+    Write.prompt format(Write.messages('your_opponent'), name: computer.name)
   end
 
   def display_welcome_message
@@ -49,18 +49,18 @@ module RPSGameDisplay
 
   def display_moves
     Write.prompt format(Write.messages('human_move'), human_name: human.name,
-                                          human_move: human.move)
-    Write.prompt format(Write.messages('computer_move'), computer_name: computer.name,
-                                             computer_move: computer.move)
+                                                      human_move: human.move)
+    Write.prompt format(Write.messages('computer_move'), name: computer.name,
+                                                         move: computer.move)
   end
 
   def display_round_winner
     human_move = human.move
     computer_move = computer.move
     if human_move > computer_move
-      Write.prompt format(Write.messages('human_won_round'), human_name: human.name)
+      Write.prompt format(Write.messages('human_won_round'), name: human.name)
     elsif human_move < computer_move
-      Write.prompt format(Write.messages('computer_won'), computer_name: computer.name)
+      Write.prompt format(Write.messages('computer_won'), name: computer.name)
     else
       Write.prompt format(Write.messages('its_a_tie'))
     end
@@ -68,29 +68,29 @@ module RPSGameDisplay
 
   def display_current_score
     Write.prompt format(Write.messages('human_score'), human_name: human.name,
-                                           human_score: human.score)
-    Write.prompt format(Write.messages('computer_score'), computer_name: computer.name,
-                                              computer_score: computer.score)
+                                                       human_score: human.score)
+    Write.prompt format(Write.messages('computer_score'), name: computer.name,
+                                                          score: computer.score)
     Write.prompt format(Write.messages('separation_banner'))
   end
 
   def display_human_win
-    Write.prompt format(Write.messages('human_wins_game'), human_name: human.name)
+    Write.prompt format(Write.messages('human_wins_game'), name: human.name)
     Write.prompt format(Write.messages('separation_banner'))
   end
 
   def display_computer_win
-    Write.prompt format(Write.messages('computer_win_game'), computer_name: computer.name)
+    Write.prompt format(Write.messages('comp_win_game'), name: computer.name)
     Write.prompt format(Write.messages('separation_banner'))
   end
 
   def display_game_winner
     if human.score == 8
       display_human_win
-      computer.display_loser_message(computer.name)
+      Personality.display_loser_message(computer.name)
     elsif computer.score == 8
       display_computer_win
-      computer.display_winner_message(computer.name)
+      Personality.display_winner_message(computer.name)
     end
     Write.prompt format(Write.messages('separation_banner'))
   end
@@ -111,7 +111,7 @@ module RPSGameDisplay
   end
 
   def display_goodbye_message
-    Write.prompt format(Write.messages('thanks_for_playing'), human_name: human.name)
+    Write.prompt format(Write.messages('thanks'), human_name: human.name)
   end
 end
 
@@ -179,15 +179,11 @@ class Human < Player
   end
 end
 
-class Computer < Player
-  def initialize
-    set_name
-    super
-    @computer_move_history = []
-  end
+class Personality
+  attr_accessor :name
 
-  def set_name
-    self.name = ['Claptrap', 'Mr. Handy', 'Mr. Gutsy'].sample
+  def initialize(name)
+    @name = name
   end
 
   CLAPTRAP_MOVES = %w(rock spock lizard lizard lizard)
@@ -197,21 +193,7 @@ class Computer < Player
   MRHANDY_MOVES = %w(rock scissors paper paper paper)
   # intellectual opponent, believes the pen is mightier than the sword
 
-  def choose
-    moveset = case @name
-              when 'Claptrap' then CLAPTRAP_MOVES
-              when 'Mr. Handy' then MRHANDY_MOVES
-              when 'Mr. Gutsy' then MRGUTSY_MOVES
-              end
-    self.move = Move.new(moveset.sample)
-    @computer_move_history << move.value
-  end
-
-  def move_history
-    @computer_move_history
-  end
-
-  def display_loser_message(name)
+  def self.display_loser_message(name)
     case name
     when 'Claptrap'
       Write.prompt format(Write.messages('claptrap_lost'))
@@ -222,7 +204,7 @@ class Computer < Player
     end
   end
 
-  def display_winner_message(name)
+  def self.display_winner_message(name)
     case name
     when 'Claptrap'
       Write.prompt format(Write.messages('claptrap_won'))
@@ -231,6 +213,33 @@ class Computer < Player
     when 'Mr. Gutsy'
       Write.prompt format(Write.messages('mr_gutsy_won'))
     end
+  end
+end
+
+class Computer < Player
+  def initialize
+    set_name
+    super
+    @computer_move_history = []
+  end
+
+  def set_name
+    self.name = [Personality.new("Claptrap"), Personality.new("Mr. Handy"),
+                 Personality.new("Mr. Gutsy")].sample.name
+  end
+
+  def choose
+    moveset = case @name
+              when 'Claptrap' then Personality::CLAPTRAP_MOVES
+              when 'Mr. Handy' then Personality::MRHANDY_MOVES
+              when 'Mr. Gutsy' then Personality::MRGUTSY_MOVES
+              end
+    self.move = Move.new(moveset.sample)
+    @computer_move_history << move.value
+  end
+
+  def move_history
+    @computer_move_history
   end
 end
 

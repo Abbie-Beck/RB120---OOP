@@ -31,7 +31,7 @@ welcome_name: |
 points_to_win: "First player to 8 points wins it all!"
 your_opponent: |
   ====================================
-  Your opponent is %{computer_name}!
+  Your opponent is %{name}!
 need_rules: "Would you like to view the rules? (y/yes)"
 rules: |
   =============================
@@ -49,28 +49,28 @@ player_clear_screen: |
   ============================
   Press c to clear the screen:
 computer_angry: "Please press c to clear screen, human!!"
-thanks_for_playing: "Thanks for playing Rock, Paper, Scissors, Lizard, Spock, %{human_name}. Goodbye!"
+thanks: "Thanks for playing Rock, Paper, Scissors, Lizard, Spock, %{human_name}. Goodbye!"
 human_move: |
   =====================================
   => %{human_name} chose %{human_move}.
 computer_move: |
-  %{computer_name} chose %{computer_move} 
+  %{name} chose %{move} 
   =====================================
-human_won_round: "%{human_name} won this round!"
-computer_won: "%{computer_name} won this round!"
+human_won_round: "%{name} won this round!"
+computer_won: "%{name} won this round!"
 its_a_tie: "It's a tie!"
 human_wins_game: |
   
-  Congratulations %{human_name}! You won it all!
-computer_win_game: |
+  Congratulations %{name}! You won it all!
+comp_win_game: |
   
-  Sorry, %{computer_name} won all the marbles!
+  Sorry, %{name} won all the marbles!
 want_move_history?: "Would you like to see the history of moves so far? (y/n)"
 human_move_history: |
   Human's Moves this game:
 computer_move_history: |
   Computer's Moves this game:
 human_score: "%{human_name}'s score is now: %{human_score}"
-computer_score: "%{computer_name}'s score is now: %{computer_score}"
+computer_score: "%{name}'s score is now: %{score}"
 play_again?: "would you like to play again?(y/n)"
 valid_answer: "Must input y or n!"

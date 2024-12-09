@@ -87,10 +87,10 @@ module RPSGameDisplay
   def display_game_winner
     if human.score == 8
       display_human_win
-      Personality.display_loser_message(computer.name)
+      Write.prompt format(computer.personality.losing_message)
     elsif computer.score == 8
       display_computer_win
-      Personality.display_winner_message(computer.name)
+      Write.prompt format(computer.personality.winning_message)
     end
     Write.prompt format(Write.messages('separation_banner'))
   end
@@ -180,10 +180,13 @@ class Human < Player
 end
 
 class Personality
-  attr_accessor :name
+  attr_accessor :name, :moves, :losing_message, :winning_message
 
-  def initialize(name)
+  def initialize(name, moves, losing_message, winning_message)
     @name = name
+    @moves = moves
+    @losing_message = losing_message
+    @winning_message = winning_message
   end
 
   CLAPTRAP_MOVES = %w(rock spock lizard lizard lizard)
@@ -193,48 +196,43 @@ class Personality
   MRHANDY_MOVES = %w(rock scissors paper paper paper)
   # intellectual opponent, believes the pen is mightier than the sword
 
-  def self.display_loser_message(name)
-    case name
-    when 'Claptrap'
-      Write.prompt format(Write.messages('claptrap_lost'))
-    when 'Mr. Handy'
-      Write.prompt format(Write.messages('mr_handy_lost'))
-    when 'Mr. Gutsy'
-      Write.prompt format(Write.messages('mr_gutsy_lost'))
-    end
+  def display_loser_message
+    self.losing_message
   end
 
-  def self.display_winner_message(name)
-    case name
-    when 'Claptrap'
-      Write.prompt format(Write.messages('claptrap_won'))
-    when 'Mr. Handy'
-      Write.prompt format(Write.messages('mr_handy_won'))
-    when 'Mr. Gutsy'
-      Write.prompt format(Write.messages('mr_gutsy_won'))
-    end
-  end
+  def display_winner_message
+    self.winning_message
+  end 
 end
 
 class Computer < Player
+  attr_reader :personality
+
+  CLAPTRAP = Personality.new("Claptrap",
+                            %w(rock spock lizard lizard lizard),
+                            Write.messages('claptrap_lost'),
+                            Write.messages('claptrap_won'))
+  MR_HANDY = Personality.new("Mr. Handy",
+                            %w(rock scissors paper paper paper),
+                            Write.messages('mr_handy_lost'),
+                            Write.messages('mr_handy_won'))
+  MR_GUTSY = Personality.new("Mr. Gutsy",
+                            %w(scissors rock rock rock),
+                            Write.messages('mr_gutsy_lost'),
+                            Write.messages('mr_gutsy_won'))
+
   def initialize
-    set_name
     super
+    @personality = [CLAPTRAP, MR_HANDY, MR_GUTSY].sample
     @computer_move_history = []
   end
 
-  def set_name
-    self.name = [Personality.new("Claptrap"), Personality.new("Mr. Handy"),
-                 Personality.new("Mr. Gutsy")].sample.name
+  def name #overriding parent getter
+    @personality.name 
   end
 
   def choose
-    moveset = case @name
-              when 'Claptrap' then Personality::CLAPTRAP_MOVES
-              when 'Mr. Handy' then Personality::MRHANDY_MOVES
-              when 'Mr. Gutsy' then Personality::MRGUTSY_MOVES
-              end
-    self.move = Move.new(moveset.sample)
+    self.move = Move.new(personality.moves.sample)
     @computer_move_history << move.value
   end
 

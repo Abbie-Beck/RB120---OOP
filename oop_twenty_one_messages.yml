@@ -1,0 +1,59 @@
+welcome: "Hello player, welcome to the game of Twenty One!"
+your_opponent: |
+  Your opponent is %{name}!
+  
+need_rules: "Would you like to view the rules? (y/yes)"
+rules: |
+  =============================
+  Main Goal:
+  The main objective of this game is to end the game with a hand total that is 
+  as close to 21 as possible without going over.
+  If either player exceeds 21 points, that player "busts" (loses)
+  
+  Points per Card:
+  - Numbered cards are worth that number of points
+  - Jacks, Queens, and Kings are worth 10 points 
+  - Aces can be worth 1 or 11 points, depending on which is better for that 
+    player's hand in light of their other cards (1 if they would bust, 11 otherwise)
+  
+  Getting Started:
+  Players are initially dealt 2 cards froma standard deck of 52 cards
+  To start the game, the player (you) will be able to see
+    - Your two cards and current total points
+    - One of the dealer's card, (not the other or their total points)
+    
+  How it Works:
+    Player Turn:
+      Players may choose to
+        - "hit" (draw another card, adding its value to their total)
+        or 
+        - "stay" (end their turn, their total remains unchanged)
+      
+      If the player chooses to hit and their points exceed 21, they immediately 
+      bust and lose the game
+      If they choose to stay, it becomes the dealer's turn
+      
+    Dealer Turn:
+      The dealer has the same set of choices with the same consequences
+      If the dealer busts, the player wins!
+      Otherwise, the value of both the player and dealer's totals are compared 
+      and the one with the highest total points wins.
+      
+done_with_rules: "Press 'p' when you're ready to clear the screen and play the game"
+show_hand: "---- %{name}'s Hand ----"
+show_total: " Total: %{total}"
+output_card: "The %{face} of %{suit}"
+input_name: "Please enter your name, player"
+valid_name: "Sorry, must enter a valid name."
+mystery_card: "~~Mystery Card~~"
+turn: "%{name}'s turn to hit or stay!"
+hit_or_stay: "Would you like to (h)it or (s)tay?"
+valid_hit_or_stay: "Sorry, must enter '(h)it' or '(s)tay'."
+hits: "%{name} hits!"
+stays: "%{name} stays!"
+busted: "It looks like %{name1} busted! %{name2} wins!"
+winner: "And the winner is: %{name}!!!"
+tie: "No one wins or loses, it's a draw."
+play_again: "Would you like to play again? (y/n)"
+valid_response: "Sorry, must be (y)es or (n)o."
+goodbye: "Thank you for playing Twenty-One. Goodbye!" 

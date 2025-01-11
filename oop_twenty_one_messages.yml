@@ -17,10 +17,10 @@ rules: |
     player's hand in light of their other cards (1 if they would bust, 11 otherwise)
   
   Getting Started:
-  Players are initially dealt 2 cards froma standard deck of 52 cards
+  Players are initially dealt 2 cards from a standard deck of 52 cards
   To start the game, the player (you) will be able to see
     - Your two cards and current total points
-    - One of the dealer's card, (not the other or their total points)
+    - One of the dealer's cards, (not the other or their total points)
     
   How it Works:
     Player Turn:

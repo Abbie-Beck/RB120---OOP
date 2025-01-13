@@ -1,7 +1,7 @@
 require 'yaml'
 
 module ClearScreen
-  def self.clear_screen
+  def self.clear
     (system 'clear') || (system 'cls')
   end
 end
@@ -16,11 +16,15 @@ module Write
   def self.messages(message)
     MESSAGES[message]
   end
+
+  def self.formatted_prompt(message)
+    prompt format(messages(message))
+  end
 end
 
 module Displayable
   def display_welcome_message
-    Write.prompt format(Write.messages('welcome'))
+    Write.formatted_prompt('welcome')
   end
 
   def display_opponent
@@ -28,25 +32,29 @@ module Displayable
   end
 
   def need_rules?
-    Write.prompt format(Write.messages('need_rules'))
+    Write.formatted_prompt('need_rules')
     answer = gets.chomp
     want_rules?(answer)
   end
 
   def rules
-    Write.prompt format(Write.messages('rules'))
-    Write.prompt format(Write.messages('done_with_rules'))
-    answer = gets.chomp.downcase
-    return ClearScreen.clear_screen if %w(p play).include?(answer)
+    Write.formatted_prompt('rules')
+    loop do
+      Write.formatted_prompt('done_with_rules')
+      answer = gets.chomp.downcase
+      return ClearScreen.clear if %w(p play).include?(answer)
+      Write.formatted_prompt('press_p')
+    end
   end
 
   def want_rules?(answer)
-    %w(y yes).include?(answer.downcase) ? rules : ClearScreen.clear_screen
+    %w(y yes).include?(answer.downcase) ? rules : ClearScreen.clear
   end
 
   def player_busted_message
     Write.prompt format(Write.messages('busted'), name1: player.name,
                                                   name2: dealer.name)
+    dealer.show_hand
   end
 
   def dealer_busted_message
@@ -57,6 +65,7 @@ module Displayable
   def show_busted
     if player.busted?
       player_busted_message
+
     elsif dealer.busted?
       dealer_busted_message
     end
@@ -76,7 +85,7 @@ module Displayable
   end
 
   def tie_message
-    Write.prompt format(Write.messages('tie'))
+    Write.formatted_prompt('tie')
   end
 
   def show_result
@@ -89,46 +98,14 @@ module Displayable
     end
   end
 
-  def show_initial_cards
-    Write.prompt format(Write.messages('show_hand'), name: name)
-    puts cards.first.display_pretty_card
-    Write.prompt format(Write.messages('mystery_card'))
-    puts ""
-  end
-
-  def show_hand
-    Write.prompt format(Write.messages('show_hand'), name: name)
-    cards.each do |card|
-      puts card.display_pretty_card
-    end
-    Write.prompt format(Write.messages('show_total'), total: total)
-    puts ""
-  end
-
-  def color
-    ['♥', '♦'].include?(@suit) ? Card::RED : Card::BLACK
-  end
-
-  def display_pretty_card
-    [
-      "┌─────────┐",
-      "│#{color}#{@face.ljust(2)}       #{Card::RESET}│",
-      "│         │",
-      "│#{color}    #{@suit}    #{Card::RESET}│",
-      "│         │",
-      "│#{color}       #{@face.rjust(2)}#{Card::RESET}│",
-      "└─────────┘"
-    ].join("\n")
-  end
-
   def play_again?
     answer = nil
     loop do
-      Write.prompt format(Write.messages('play_again'))
+      Write.formatted_prompt('play_again')
       answer = gets.chomp.downcase
       return true if %(y yes).include?(answer)
       return false if %w(n no).include?(answer)
-      Write.prompt format(Write.messages('valid_response'))
+      Write.formatted_prompt('valid_response')
     end
   end
 
@@ -140,7 +117,6 @@ end
 
 module Hand
   include Write
-  include Displayable
 
   def court_card?(card)
     card.jack? || card.queen? || card.king?
@@ -149,13 +125,7 @@ module Hand
   def total
     total = 0
     cards.each do |card|
-      if card.ace?
-        total += 11
-      elsif court_card?(card)
-        total += 10
-      else
-        total += card.face.to_i
-      end
+      total += card.score
     end
 
     cards.select(&:ace?).count.times do
@@ -177,7 +147,6 @@ end
 
 class Card
   include Write
-  include Displayable
 
   SUITS = ['♠', '♥', '♦', '♣']
   FACES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
@@ -185,6 +154,22 @@ class Card
   RED = "\e[31m"
   BLACK = "\e[37m"
   RESET = "\e[0m"
+
+  def color
+    ['♥', '♦'].include?(@suit) ? Card::RED : Card::BLACK
+  end
+
+  def display_pretty_card
+    [
+      "┌─────────┐",
+      "│#{color}#{@face.ljust(2)}       #{Card::RESET}│",
+      "│         │",
+      "│#{color}    #{@suit}    #{Card::RESET}│",
+      "│         │",
+      "│#{color}       #{@face.rjust(2)}#{Card::RESET}│",
+      "└─────────┘"
+    ].join("\n")
+  end
 
   def initialize(suit, face)
     @suit = suit
@@ -203,6 +188,16 @@ class Card
     when 'A' then 'Ace'
     else
       @face
+    end
+  end
+
+  def score
+    if jack? || queen? || king?
+      10
+    elsif ace?
+      11
+    else
+      face.to_i
     end
   end
 
@@ -257,12 +252,43 @@ end
 
 class Participant
   include Hand
-  include Displayable
 
   attr_accessor :name, :cards
 
   def initialize
     @cards = []
+  end
+
+  COLOR = "\e[37m"
+  RESET = "\e[0m"
+
+  def display_mystery_card
+    marker = "?"
+    [
+      "┌─────────┐",
+      "│#{COLOR}#{marker.ljust(2)}       #{Card::RESET}│",
+      "│         │",
+      "│#{COLOR}    #{marker}    #{Card::RESET}│",
+      "│         │",
+      "│#{COLOR}       #{marker.rjust(2)}#{Card::RESET}│",
+      "└─────────┘"
+    ].join("\n")
+  end
+
+  def show_initial_cards
+    Write.prompt format(Write.messages('show_hand'), name: name)
+    puts cards.first.display_pretty_card
+    puts display_mystery_card
+    puts ""
+  end
+
+  def show_hand
+    Write.prompt format(Write.messages('show_hand'), name: name)
+    cards.each do |card|
+      puts card.display_pretty_card
+    end
+    Write.prompt format(Write.messages('show_total'), total: total)
+    puts ""
   end
 
   def show_cards
@@ -274,17 +300,17 @@ class Player < Participant
   def set_name
     name = ''
     loop do
-      Write.prompt format(Write.messages('input_name'))
+      Write.formatted_prompt('input_name')
       name = gets.chomp.capitalize
       break unless name.strip.empty?
-      Write.prompt format(Write.messages('valid_name'))
+      Write.formatted_prompt('valid_name')
     end
     self.name = name
   end
 end
 
 class Dealer < Participant
-  DEALERS = %w(Cooper Laura Donna James Bobby)
+  DEALERS = %w(Cooper Laura Donna James Bobby Audrey)
   def initialize
     super
     set_name
@@ -299,8 +325,6 @@ class TwentyOne
   include Write
   include Displayable
 
-  attr_accessor :deck, :player, :dealer
-
   def initialize
     @deck = Deck.new
     @player = Player.new
@@ -312,6 +336,8 @@ class TwentyOne
   end
 
   private
+
+  attr_accessor :deck, :player, :dealer
 
   def reset
     self.deck = Deck.new
@@ -340,12 +366,12 @@ class TwentyOne
     loop do
       answer = gets.chomp.downcase
       return answer if %w(h hit s stay).include?(answer)
-      Write.prompt format(Write.messages('valid_hit_or_stay'))
+      Write.formatted_prompt('valid_hit_or_stay')
     end
   end
 
   def aquire_hit_or_stay
-    Write.prompt format(Write.messages('hit_or_stay'))
+    Write.formatted_prompt('hit_or_stay')
     hit_or_stay?
   end
 
@@ -374,12 +400,18 @@ class TwentyOne
   def dealer_hits
     Write.prompt format(Write.messages('hits'), name: dealer.name)
     dealer.add_card(deck.deal_one)
+    player.show_cards
+    dealer.show_cards
+  end
+
+  def dealer_stays
+    Write.prompt format(Write.messages('stays'), name: dealer.name)
   end
 
   def dealer_turn_loop
     loop do
       if dealer.total >= 17 && !dealer.busted?
-        Write.prompt format(Write.messages('stays'), name: dealer.name)
+        dealer_stays
         break
       elsif dealer.busted?
         break
@@ -404,7 +436,7 @@ class TwentyOne
       break unless play_again?
       reset
     end
-    Write.prompt format(Write.messages('goodbye'))
+    Write.formatted_prompt('goodbye')
   end
 
   def play_single_game
@@ -417,7 +449,7 @@ class TwentyOne
   end
 
   def setup_game
-    ClearScreen.clear_screen
+    ClearScreen.clear
     deal_cards
     show_cards
   end

@@ -117,6 +117,8 @@ end
 
 module Hand
   include Write
+  
+  MAX_SCORE = 21
 
   def court_card?(card)
     card.jack? || card.queen? || card.king?
@@ -129,7 +131,7 @@ module Hand
     end
 
     cards.select(&:ace?).count.times do
-      break if total <= 21
+      break if total <= MAX_SCORE
       total -= 10
     end
 
@@ -141,7 +143,7 @@ module Hand
   end
 
   def busted?
-    total > 21
+    total > MAX_SCORE
   end
 end
 

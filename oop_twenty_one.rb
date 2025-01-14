@@ -17,8 +17,8 @@ module Write
     MESSAGES[message]
   end
 
-  def self.formatted_prompt(message)
-    prompt format(messages(message))
+  def self.formatted_prompt(message, **options)
+    prompt format(messages(message), **options)
   end
 end
 
@@ -28,7 +28,7 @@ module Displayable
   end
 
   def display_opponent
-    Write.prompt format(Write.messages('your_opponent'), name: dealer.name)
+    Write.formatted_prompt('your_opponent', name: dealer.name)
   end
 
   def need_rules?
@@ -42,7 +42,8 @@ module Displayable
     loop do
       Write.formatted_prompt('done_with_rules')
       answer = gets.chomp.downcase
-      return ClearScreen.clear if %w(p play).include?(answer)
+      valid_play = Write.messages('valid_play_response')
+      return ClearScreen.clear if valid_play.include?(answer)
       Write.formatted_prompt('press_p')
     end
   end
@@ -52,14 +53,14 @@ module Displayable
   end
 
   def player_busted_message
-    Write.prompt format(Write.messages('busted'), name1: player.name,
-                                                  name2: dealer.name)
+    Write.formatted_prompt('busted', name1: player.name,
+                                     name2: dealer.name)
     dealer.show_hand
   end
 
   def dealer_busted_message
-    Write.prompt format(Write.messages('busted'), name1: dealer.name,
-                                                  name2: player.name)
+    Write.formatted_prompt('busted', name1: dealer.name,
+                                     name2: player.name)
   end
 
   def show_busted
@@ -77,11 +78,11 @@ module Displayable
   end
 
   def player_wins_message
-    Write.prompt format(Write.messages('winner'), name: player.name)
+    Write.formatted_prompt('winner', name: player.name)
   end
 
   def dealer_wins_message
-    Write.prompt format(Write.messages('winner'), name: dealer.name)
+    Write.formatted_prompt('winner', name: dealer.name)
   end
 
   def tie_message
@@ -117,7 +118,7 @@ end
 
 module Hand
   include Write
-  
+
   MAX_SCORE = 21
 
   def court_card?(card)
@@ -179,7 +180,7 @@ class Card
   end
 
   def to_s
-    Write.prompt format(Write.messages('output_card'), face: face, suit: suit)
+    Write.formatted_prompt('output_card', face: face, suit: suit)
   end
 
   def face
@@ -278,18 +279,18 @@ class Participant
   end
 
   def show_initial_cards
-    Write.prompt format(Write.messages('show_hand'), name: name)
+    Write.formatted_prompt('show_hand', name: name)
     puts cards.first.display_pretty_card
     puts display_mystery_card
     puts ""
   end
 
   def show_hand
-    Write.prompt format(Write.messages('show_hand'), name: name)
+    Write.formatted_prompt('show_hand', name: name)
     cards.each do |card|
       puts card.display_pretty_card
     end
-    Write.prompt format(Write.messages('show_total'), total: total)
+    Write.formatted_prompt('show_total', total: total)
     puts ""
   end
 
@@ -312,7 +313,7 @@ class Player < Participant
 end
 
 class Dealer < Participant
-  DEALERS = %w(Cooper Laura Donna James Bobby Audrey)
+  DEALERS = Write.messages('dealers')
   def initialize
     super
     set_name
@@ -359,7 +360,7 @@ class TwentyOne
 
   def player_hits
     player.add_card(deck.deal_one)
-    Write.prompt format(Write.messages('hits'), name: player.name)
+    Write.formatted_prompt('hits', name: player.name)
     player.show_hand
   end
 
@@ -367,7 +368,8 @@ class TwentyOne
     answer = nil
     loop do
       answer = gets.chomp.downcase
-      return answer if %w(h hit s stay).include?(answer)
+      valid_responses = Write.messages('valid_hit_or_stay_responses')
+      return answer if valid_responses.include?(answer)
       Write.formatted_prompt('valid_hit_or_stay')
     end
   end
@@ -378,12 +380,12 @@ class TwentyOne
   end
 
   def player_stays_message
-    Write.prompt format(Write.messages('stays'), name: player.name)
+    Write.formatted_prompt('stays', name: player.name)
   end
 
   def player_turn_loop
     loop do
-      if %w(s stay).include?(aquire_hit_or_stay)
+      if Write.messages('valid_stay').include?(aquire_hit_or_stay)
         return player_stays_message
       elsif player.busted?
         break
@@ -395,19 +397,19 @@ class TwentyOne
   end
 
   def player_turn
-    Write.prompt format(Write.messages('turn'), name: player.name)
+    Write.formatted_prompt('turn', name: player.name)
     player_turn_loop
   end
 
   def dealer_hits
-    Write.prompt format(Write.messages('hits'), name: dealer.name)
+    Write.formatted_prompt('hits', name: dealer.name)
     dealer.add_card(deck.deal_one)
     player.show_cards
     dealer.show_cards
   end
 
   def dealer_stays
-    Write.prompt format(Write.messages('stays'), name: dealer.name)
+    Write.formatted_prompt('stays', name: dealer.name)
   end
 
   def dealer_turn_loop
@@ -424,7 +426,7 @@ class TwentyOne
   end
 
   def dealer_turn
-    Write.prompt format(Write.messages('turn'), name: dealer.name)
+    Write.formatted_prompt('turn', name: dealer.name)
     dealer_turn_loop
   end
 

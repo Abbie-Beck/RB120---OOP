@@ -58,3 +58,21 @@ play_again: "Would you like to play again? (y/n)"
 valid_response: "Sorry, must be (y)es or (n)o."
 goodbye: "Thank you for playing Twenty-One. Goodbye!" 
 press_p: "Please press 'p' or 'play' to play game!"
+valid_hit_or_stay_responses:
+  - h
+  - hit
+  - s
+  - stay
+valid_stay: 
+  - s 
+  - stay
+dealers: 
+  - Cooper
+  - Laura
+  - Donna
+  - James
+  - Bobby
+  - Audrey
+valid_play_response:
+  - p
+  - play

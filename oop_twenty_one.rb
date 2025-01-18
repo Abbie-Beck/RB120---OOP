@@ -149,7 +149,11 @@ module Hand
 end
 
 class Card
+  MYSTERY_MARKER = "?"
+
   include Write
+
+  attr_reader :face, :suit
 
   SUITS = ['♠', '♥', '♦', '♣']
   FACES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
@@ -158,18 +162,20 @@ class Card
   BLACK = "\e[37m"
   RESET = "\e[0m"
 
-  def color
-    ['♥', '♦'].include?(@suit) ? Card::RED : Card::BLACK
+  def color(suit)
+    ['♥', '♦'].include?(suit) ? Card::RED : Card::BLACK
   end
 
-  def display_pretty_card
+  def display_pretty_card(card_face, card_suit)
+    card_color = card_face == "?" ? "\e[35m" : color(card_suit)
+
     [
       "┌─────────┐",
-      "│#{color}#{@face.ljust(2)}       #{Card::RESET}│",
+      "│#{card_color}#{card_face.ljust(2)}       #{RESET}│",
       "│         │",
-      "│#{color}    #{@suit}    #{Card::RESET}│",
+      "│#{card_color}    #{card_suit}    #{RESET}│",
       "│         │",
-      "│#{color}       #{@face.rjust(2)}#{Card::RESET}│",
+      "│#{card_color}       #{card_face.rjust(2)}#{RESET}│",
       "└─────────┘"
     ].join("\n")
   end
@@ -183,17 +189,6 @@ class Card
     Write.formatted_prompt('output_card', face: face, suit: suit)
   end
 
-  def face
-    case @face
-    when 'J' then 'Jack'
-    when 'Q' then 'Queen'
-    when 'K' then 'King'
-    when 'A' then 'Ace'
-    else
-      @face
-    end
-  end
-
   def score
     if jack? || queen? || king?
       10
@@ -204,29 +199,20 @@ class Card
     end
   end
 
-  def suit
-    {
-      'H' => 'Hearts',
-      'D' => 'Diamonds',
-      'S' => 'Spades',
-      'C' => 'Clubs'
-    }
-  end
-
   def ace?
-    face == 'Ace'
+    face == 'A'
   end
 
   def king?
-    face == 'King'
+    face == 'K'
   end
 
   def queen?
-    face == 'Queen'
+    face == 'Q'
   end
 
   def jack?
-    face == 'Jack'
+    face == 'J'
   end
 end
 
@@ -262,33 +248,18 @@ class Participant
     @cards = []
   end
 
-  COLOR = "\e[37m"
-  RESET = "\e[0m"
-
-  def display_mystery_card
-    marker = "?"
-    [
-      "┌─────────┐",
-      "│#{COLOR}#{marker.ljust(2)}       #{Card::RESET}│",
-      "│         │",
-      "│#{COLOR}    #{marker}    #{Card::RESET}│",
-      "│         │",
-      "│#{COLOR}       #{marker.rjust(2)}#{Card::RESET}│",
-      "└─────────┘"
-    ].join("\n")
-  end
-
   def show_initial_cards
+    mystery_marker = Card::MYSTERY_MARKER
     Write.formatted_prompt('show_hand', name: name)
-    puts cards.first.display_pretty_card
-    puts display_mystery_card
+    puts cards.first.display_pretty_card(cards.first.face, cards.first.suit)
+    puts cards.first.display_pretty_card(mystery_marker, mystery_marker)
     puts ""
   end
 
   def show_hand
     Write.formatted_prompt('show_hand', name: name)
     cards.each do |card|
-      puts card.display_pretty_card
+      puts card.display_pretty_card(card.face, card.suit)
     end
     Write.formatted_prompt('show_total', total: total)
     puts ""
